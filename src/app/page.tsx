@@ -2,13 +2,30 @@
 
 import { useState, useMemo } from "react";
 
-// ── Dummy data ──────────────────────────────────────────────────────────────
+// ── Types ───────────────────────────────────────────────────────────────────
+
+type Platform =
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "twitter"
+  | "reddit"
+  | "web";
+
+type ContentType =
+  | "post"
+  | "reel"
+  | "video"
+  | "tweet"
+  | "thread"
+  | "article"
+  | "unknown";
 
 interface SavedItem {
   id: string;
   source_url: string;
-  platform: "instagram";
-  content_type: "post" | "reel";
+  platform: Platform;
+  content_type: ContentType;
   title: string;
   summary: string;
   topics: string[];
@@ -16,6 +33,8 @@ interface SavedItem {
   language: string;
   created_at: string;
 }
+
+// ── Dummy data ──────────────────────────────────────────────────────────────
 
 const DUMMY_DATA: SavedItem[] = [
   {
@@ -25,100 +44,101 @@ const DUMMY_DATA: SavedItem[] = [
     content_type: "reel",
     title: "Cheesy Garlic Naan Recipe",
     summary:
-      "A cooking tutorial where someone learns to make cheesy garlic naan from their mom as part of a 14-day Indian cooking series. The video shows the full recipe process with engaging family dynamics.",
-    topics: ["cooking", "indian food", "recipe", "family"],
+      "A cooking tutorial where someone learns to make cheesy garlic naan from their mom as part of a 14-day Indian cooking series.",
+    topics: ["cooking", "indian food", "recipe"],
     author: "tryit.toronto",
     language: "en",
     created_at: "2026-03-30T10:00:00Z",
   },
   {
     id: "2",
-    source_url: "https://www.instagram.com/p/DWTg_Z6DCRO/",
-    platform: "instagram",
-    content_type: "post",
-    title: "Minimal Desk Setup Goals",
+    source_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    platform: "youtube",
+    content_type: "video",
+    title: "Never Gonna Give You Up",
     summary:
-      "A minimalist workspace setup featuring a clean desk with ambient lighting, a mechanical keyboard, and dual monitors. The post emphasizes productivity through aesthetic environment design.",
-    topics: ["productivity", "desk setup", "minimalism", "tech"],
-    author: "setupinspiration",
+      "The iconic 1987 music video by Rick Astley that became one of the most famous internet memes, known as rickrolling.",
+    topics: ["music", "pop", "meme", "classic"],
+    author: "Rick Astley",
     language: "en",
     created_at: "2026-03-29T15:30:00Z",
   },
   {
     id: "3",
-    source_url: "https://www.instagram.com/reel/DV1abc123/",
-    platform: "instagram",
-    content_type: "reel",
-    title: "Science-Backed Morning Routine",
+    source_url: "https://www.tiktok.com/@zachking/video/7478773498880265518",
+    platform: "tiktok",
+    content_type: "video",
+    title: "Mind-Bending Magic Trick",
     summary:
-      "A 60-second morning routine breakdown including cold exposure, journaling, and a protein-packed breakfast. The creator shares science-backed benefits for each habit.",
-    topics: ["morning routine", "wellness", "habits", "health"],
-    author: "hubermanclips",
+      "Zach King performs a seamless visual illusion that makes everyday objects appear to transform in impossible ways.",
+    topics: ["magic", "illusion", "creative", "entertainment"],
+    author: "zachking",
     language: "en",
     created_at: "2026-03-28T08:00:00Z",
   },
   {
     id: "4",
-    source_url: "https://www.instagram.com/p/DWxyz789/",
-    platform: "instagram",
-    content_type: "post",
-    title: "5 TypeScript Mistakes to Avoid",
+    source_url: "https://x.com/elonmusk/status/1861446800666911182",
+    platform: "twitter",
+    content_type: "tweet",
+    title: "SpaceX Starship Update",
     summary:
-      "A carousel post explaining 5 common TypeScript mistakes and how to avoid them, with clear code examples and visual comparisons between wrong and right approaches.",
-    topics: ["typescript", "programming", "web development", "tips"],
-    author: "codewithguillaume",
+      "Elon Musk shares an update about the latest Starship development milestones and upcoming test flight schedule.",
+    topics: ["space", "spacex", "technology", "engineering"],
+    author: "elonmusk",
     language: "en",
     created_at: "2026-03-27T12:00:00Z",
   },
   {
     id: "5",
-    source_url: "https://www.instagram.com/reel/DVdef456/",
-    platform: "instagram",
-    content_type: "reel",
-    title: "Mexico City Street Food Tour",
+    source_url:
+      "https://www.reddit.com/r/webdev/comments/1jm2k5q/what_is_the_most_overengineered_thing_youve_seen/",
+    platform: "reddit",
+    content_type: "thread",
+    title: "Overengineered Web Dev Stories",
     summary:
-      "Street food tour in Mexico City showcasing tacos al pastor, elote, and churros from three iconic vendors. The creator highlights the history behind each dish.",
-    topics: ["street food", "mexico", "travel", "food culture"],
-    author: "markwiens",
+      "A popular thread where developers share their most absurd examples of overengineering in web development projects.",
+    topics: ["web development", "programming", "humor"],
+    author: "r/webdev",
     language: "en",
     created_at: "2026-03-26T18:45:00Z",
   },
   {
     id: "6",
-    source_url: "https://www.instagram.com/p/DWghi012/",
+    source_url: "https://www.instagram.com/p/DWTg_Z6DCRO/",
     platform: "instagram",
     content_type: "post",
-    title: "Compound Interest Explained Simply",
+    title: "Minimal Desk Setup Goals",
     summary:
-      "An infographic breaking down how compound interest works with real dollar amounts over 10, 20, and 30-year periods. Aimed at beginner investors in their 20s.",
-    topics: ["personal finance", "investing", "money", "education"],
-    author: "financialdiet",
+      "A minimalist workspace setup featuring a clean desk with ambient lighting, mechanical keyboard, and dual monitors.",
+    topics: ["productivity", "desk setup", "minimalism"],
+    author: "setupinspiration",
     language: "en",
     created_at: "2026-03-25T09:15:00Z",
   },
   {
     id: "7",
-    source_url: "https://www.instagram.com/reel/DVjkl345/",
-    platform: "instagram",
-    content_type: "reel",
-    title: "Oil Painting Time-Lapse",
+    source_url: "https://blog.apify.com/what-is-web-scraping/",
+    platform: "web",
+    content_type: "article",
+    title: "Web Scraping Complete Guide",
     summary:
-      "A time-lapse of an oil painting being created from start to finish, showing the artist's process of layering colors to create a photorealistic portrait.",
-    topics: ["art", "painting", "timelapse", "creative process"],
-    author: "artbyzheng",
+      "A comprehensive guide explaining what web scraping is, how it works, real-world use cases, and how to get started with data extraction.",
+    topics: ["web scraping", "programming", "data", "tutorial"],
+    author: "apify.com",
     language: "en",
     created_at: "2026-03-24T20:30:00Z",
   },
   {
     id: "8",
-    source_url: "https://www.instagram.com/p/DWmno678/",
-    platform: "instagram",
-    content_type: "post",
-    title: "Best Note-Taking App Showdown",
+    source_url: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+    platform: "youtube",
+    content_type: "video",
+    title: "Me at the Zoo",
     summary:
-      "A comparison of three popular note-taking apps (Notion, Obsidian, and Apple Notes) with pros and cons for each based on the creator's year-long experience using all three.",
-    topics: ["productivity", "apps", "note-taking", "comparison"],
-    author: "keepproductive",
+      "The very first video ever uploaded to YouTube, featuring co-founder Jawed Karim at the San Diego Zoo talking about elephants.",
+    topics: ["youtube", "history", "internet culture"],
+    author: "jawed",
     language: "en",
     created_at: "2026-03-23T14:00:00Z",
   },
@@ -129,8 +149,8 @@ const DUMMY_DATA: SavedItem[] = [
     content_type: "reel",
     title: "4-7-8 Breathing for Anxiety",
     summary:
-      "A guided 5-minute breathing exercise for anxiety relief using the 4-7-8 technique. The creator explains the physiological reasons why it calms the nervous system.",
-    topics: ["mental health", "breathing", "anxiety", "mindfulness"],
+      "A guided 5-minute breathing exercise for anxiety relief using the 4-7-8 technique with physiological explanations.",
+    topics: ["mental health", "breathing", "mindfulness"],
     author: "drjuliesmith",
     language: "en",
     created_at: "2026-03-22T07:00:00Z",
@@ -153,7 +173,113 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-// Topic → accent color mapping for visual variety
+// Platform config: icon SVG path, badge color, label
+const PLATFORM_CONFIG: Record<
+  Platform,
+  { icon: string; color: string; label: string }
+> = {
+  instagram: {
+    icon: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z",
+    color: "text-pink-400",
+    label: "Instagram",
+  },
+  youtube: {
+    icon: "M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+    color: "text-red-500",
+    label: "YouTube",
+  },
+  tiktok: {
+    icon: "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
+    color: "text-zinc-100",
+    label: "TikTok",
+  },
+  twitter: {
+    icon: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+    color: "text-zinc-100",
+    label: "X",
+  },
+  reddit: {
+    icon: "M12 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 01-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 01.042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 014.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 01.14-.197.35.35 0 01.238-.042l2.906.617a1.214 1.214 0 011.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 00-.231.094.33.33 0 000 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 00.029-.463.33.33 0 00-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 00-.232-.095z",
+    color: "text-orange-500",
+    label: "Reddit",
+  },
+  web: {
+    icon: "M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
+    color: "text-zinc-400",
+    label: "Web",
+  },
+};
+
+const CONTENT_TYPE_CONFIG: Record<
+  ContentType,
+  { icon: React.ReactNode; color: string; label: string }
+> = {
+  post: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+      </svg>
+    ),
+    color: "bg-sky-500/10 text-sky-400",
+    label: "Post",
+  },
+  reel: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M6.3 2.84A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.27l9.344-5.891a1.5 1.5 0 000-2.538L6.3 2.841z" />
+      </svg>
+    ),
+    color: "bg-violet-500/10 text-violet-400",
+    label: "Reel",
+  },
+  video: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M6.3 2.84A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.27l9.344-5.891a1.5 1.5 0 000-2.538L6.3 2.841z" />
+      </svg>
+    ),
+    color: "bg-red-500/10 text-red-400",
+    label: "Video",
+  },
+  tweet: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" d="M7.5 8.25h9M7.5 12h9m-9 3.75h5.25" />
+      </svg>
+    ),
+    color: "bg-zinc-500/10 text-zinc-300",
+    label: "Tweet",
+  },
+  thread: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" d="M7.5 8.25h9M7.5 12h9m-9 3.75h5.25" />
+      </svg>
+    ),
+    color: "bg-orange-500/10 text-orange-400",
+    label: "Thread",
+  },
+  article: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+    ),
+    color: "bg-zinc-500/10 text-zinc-400",
+    label: "Article",
+  },
+  unknown: {
+    icon: (
+      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    ),
+    color: "bg-zinc-500/10 text-zinc-500",
+    label: "Link",
+  },
+};
+
+// Topic colors
 const TOPIC_COLORS: Record<string, string> = {
   cooking: "bg-orange-500/10 text-orange-400",
   "indian food": "bg-amber-500/10 text-amber-400",
@@ -161,29 +287,31 @@ const TOPIC_COLORS: Record<string, string> = {
   productivity: "bg-blue-500/10 text-blue-400",
   minimalism: "bg-zinc-500/10 text-zinc-400",
   tech: "bg-cyan-500/10 text-cyan-400",
-  wellness: "bg-emerald-500/10 text-emerald-400",
-  health: "bg-emerald-500/10 text-emerald-400",
+  technology: "bg-cyan-500/10 text-cyan-400",
   programming: "bg-violet-500/10 text-violet-400",
-  typescript: "bg-blue-500/10 text-blue-400",
+  "web development": "bg-violet-500/10 text-violet-400",
   travel: "bg-sky-500/10 text-sky-400",
-  "street food": "bg-orange-500/10 text-orange-400",
-  "personal finance": "bg-green-500/10 text-green-400",
-  investing: "bg-green-500/10 text-green-400",
-  art: "bg-fuchsia-500/10 text-fuchsia-400",
-  painting: "bg-fuchsia-500/10 text-fuchsia-400",
+  music: "bg-pink-500/10 text-pink-400",
+  space: "bg-indigo-500/10 text-indigo-400",
   "mental health": "bg-teal-500/10 text-teal-400",
   mindfulness: "bg-teal-500/10 text-teal-400",
+  entertainment: "bg-yellow-500/10 text-yellow-400",
+  humor: "bg-yellow-500/10 text-yellow-400",
+  data: "bg-emerald-500/10 text-emerald-400",
+  tutorial: "bg-blue-500/10 text-blue-400",
 };
-
 function topicColor(topic: string): string {
   return TOPIC_COLORS[topic] || "bg-zinc-800/80 text-zinc-400";
 }
 
 // ── Components ───────────────────────────────────────────────────────────────
 
-type FilterType = "all" | "post" | "reel";
+type FilterType = "all" | Platform;
 
 function ContentCard({ item }: { item: SavedItem }) {
+  const platform = PLATFORM_CONFIG[item.platform];
+  const ctype = CONTENT_TYPE_CONFIG[item.content_type];
+
   return (
     <a
       href={item.source_url}
@@ -194,33 +322,19 @@ function ContentCard({ item }: { item: SavedItem }) {
       {/* Top row: type badge + platform + time */}
       <div className="flex items-center gap-2 mb-3">
         <span
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${
-            item.content_type === "reel"
-              ? "bg-violet-500/10 text-violet-400"
-              : "bg-sky-500/10 text-sky-400"
-          }`}
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${ctype.color}`}
         >
-          {item.content_type === "reel" ? (
-            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M6.3 2.84A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.27l9.344-5.891a1.5 1.5 0 000-2.538L6.3 2.841z" />
-            </svg>
-          ) : (
-            <svg
-              className="w-2.5 h-2.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-            </svg>
-          )}
-          {item.content_type === "reel" ? "Reel" : "Post"}
+          {ctype.icon}
+          {ctype.label}
         </span>
 
-        {/* Instagram icon */}
-        <svg className="w-3 h-3 text-zinc-600" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+        {/* Platform icon */}
+        <svg
+          className={`w-3 h-3 ${platform.color}`}
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path d={platform.icon} />
         </svg>
 
         <span className="ml-auto text-[11px] text-zinc-600">
@@ -234,7 +348,9 @@ function ContentCard({ item }: { item: SavedItem }) {
       </h3>
 
       {/* Author */}
-      <p className="text-xs text-zinc-500 mb-3">@{item.author}</p>
+      <p className="text-xs text-zinc-500 mb-3">
+        {item.platform === "reddit" ? item.author : `@${item.author}`}
+      </p>
 
       {/* Summary */}
       <p className="text-[13px] leading-relaxed text-zinc-400 line-clamp-3 mb-4">
@@ -296,13 +412,17 @@ export default function Home() {
 
   const filters: { label: string; value: FilterType }[] = [
     { label: "All", value: "all" },
-    { label: "Posts", value: "post" },
-    { label: "Reels", value: "reel" },
+    { label: "Instagram", value: "instagram" },
+    { label: "YouTube", value: "youtube" },
+    { label: "TikTok", value: "tiktok" },
+    { label: "X", value: "twitter" },
+    { label: "Reddit", value: "reddit" },
+    { label: "Web", value: "web" },
   ];
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
-      if (filter !== "all" && item.content_type !== filter) return false;
+      if (filter !== "all" && item.platform !== filter) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -351,7 +471,6 @@ export default function Home() {
               SaveSense
             </h1>
           </div>
-
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-400">
               P
@@ -382,7 +501,7 @@ export default function Home() {
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste an Instagram URL to analyze..."
+                placeholder="Paste any URL to analyze..."
                 className="flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 outline-none py-2"
               />
             </div>
@@ -466,12 +585,13 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/50 border border-zinc-800/40">
+          {/* Filter chips — scrollable on mobile */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-900/50 border border-zinc-800/40 overflow-x-auto">
             {filters.map((f) => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                   filter === f.value
                     ? "bg-zinc-800 text-zinc-100 shadow-sm"
                     : "text-zinc-500 hover:text-zinc-300"

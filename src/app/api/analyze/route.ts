@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { scrapeInstagram } from "@/lib/apify";
+import { scrapeUrl } from "@/lib/apify";
 import { analyzeContent } from "@/lib/llm";
 
 export async function POST(req: NextRequest) {
@@ -10,15 +10,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing url field" }, { status: 400 });
     }
 
-    if (!url.includes("instagram.com")) {
-      return NextResponse.json(
-        { error: "Only Instagram URLs are supported for now" },
-        { status: 400 }
-      );
+    // Validate it looks like a URL
+    try {
+      new URL(url);
+    } catch {
+      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    // Step 1: Scrape via Apify
-    const scraped = await scrapeInstagram(url);
+    // Step 1: Scrape via Apify (auto-detects platform)
+    const scraped = await scrapeUrl(url);
 
     // Step 2: Analyze via LLM
     const analysis = await analyzeContent(scraped);
