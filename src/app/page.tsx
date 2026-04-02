@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { UserButton } from "@clerk/nextjs";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -408,7 +409,43 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [items] = useState<SavedItem[]>(DUMMY_DATA);
+  const [isSearching, setIsSearching] = useState(false);
+  const [items, setItems] = useState<SavedItem[]>([]);
+  const [searchResults, setSearchResults] = useState<SavedItem[] | null>(null);
+
+  // Sync user to DB + load bookmarks on first load
+  useEffect(() => {
+    async function init() {
+      await fetch("/api/auth/sync", { method: "POST" });
+      const res = await fetch("/api/bookmarks");
+      const data = await res.json();
+      if (data.items) setItems(data.items);
+    }
+    init();
+  }, []);
+
+  // Debounced semantic search
+  useEffect(() => {
+    if (!search.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
+        const data = await res.json();
+        if (data.items) setSearchResults(data.items);
+      } catch {
+        setSearchResults(null);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   const filters: { label: string; value: FilterType }[] = [
     { label: "All", value: "all" },
@@ -420,30 +457,38 @@ export default function Home() {
     { label: "Web", value: "web" },
   ];
 
+  // Use semantic search results when searching, otherwise filter locally
+  const displayItems = searchResults ?? items;
   const filtered = useMemo(() => {
-    return items.filter((item) => {
+    return displayItems.filter((item) => {
       if (filter !== "all" && item.platform !== filter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return (
-          item.title.toLowerCase().includes(q) ||
-          item.summary.toLowerCase().includes(q) ||
-          item.author.toLowerCase().includes(q) ||
-          item.topics.some((t) => t.toLowerCase().includes(q))
-        );
-      }
       return true;
     });
-  }, [items, filter, search]);
+  }, [displayItems, filter]);
 
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!url) return;
     setIsAnalyzing(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.ok && data.analysis) {
+        // Reload bookmarks to get the saved item with its DB id
+        const bookmarksRes = await fetch("/api/bookmarks");
+        const bookmarksData = await bookmarksRes.json();
+        if (bookmarksData.items) setItems(bookmarksData.items);
+      }
+    } catch (err) {
+      console.error("Analysis failed:", err);
+    } finally {
       setIsAnalyzing(false);
       setUrl("");
-    }, 3000);
+    }
   }
 
   return (
@@ -451,6 +496,7 @@ export default function Home() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="w-8" />
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
               <svg
@@ -468,13 +514,20 @@ export default function Home() {
               </svg>
             </div>
             <h1 className="text-lg font-semibold tracking-tight text-zinc-100">
-              SaveSense
+              SocialStash
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-400">
-              P
-            </div>
+            <UserButton
+              showName={false}
+              appearance={{
+                elements: {
+                  userButtonPopoverActionButton__manageAccount: {
+                    display: "none",
+                  },
+                },
+              }}
+            />
           </div>
         </div>
       </header>
@@ -560,7 +613,7 @@ export default function Home() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, topic, author..."
+              placeholder={isSearching ? "Searching..." : "Search by title, topic, author..."}
               className="flex-1 bg-transparent text-sm text-zinc-300 placeholder-zinc-600 outline-none"
             />
             {search && (
