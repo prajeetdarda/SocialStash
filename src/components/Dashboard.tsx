@@ -361,7 +361,8 @@ function ContentCard({
             </span>
           )}
         </div>
-        {!isExample && onDelete && (
+        {/* TODO: re-enable delete button when ready */}
+        {false && !isExample && onDelete && (
           <button
             onClick={(e) => {
               e.stopPropagation();
