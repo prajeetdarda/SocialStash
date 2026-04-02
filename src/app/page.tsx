@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
+import { FREE_SAVE_LIMIT } from "@/lib/constants";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -35,126 +36,60 @@ interface SavedItem {
   created_at: string;
 }
 
-// ── Dummy data ──────────────────────────────────────────────────────────────
+// ── Example cards for new users ─────────────────────────────────────────────
 
-const DUMMY_DATA: SavedItem[] = [
+const EXAMPLE_DATA: SavedItem[] = [
   {
-    id: "1",
-    source_url: "https://www.instagram.com/reel/DVKgR_oDCwr/",
+    id: "example-1",
+    source_url: "https://www.instagram.com/reel/example",
     platform: "instagram",
     content_type: "reel",
     title: "Cheesy Garlic Naan Recipe",
     summary:
-      "A cooking tutorial where someone learns to make cheesy garlic naan from their mom as part of a 14-day Indian cooking series.",
+      "A cooking tutorial showing how to make cheesy garlic naan from scratch — crispy on the outside, soft and gooey inside.",
     topics: ["cooking", "indian food", "recipe"],
     author: "tryit.toronto",
     language: "en",
-    created_at: "2026-03-30T10:00:00Z",
+    created_at: new Date().toISOString(),
   },
   {
-    id: "2",
-    source_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    id: "example-2",
+    source_url: "https://www.youtube.com/watch?v=example",
     platform: "youtube",
     content_type: "video",
-    title: "Never Gonna Give You Up",
+    title: "How I Built an AI App in a Weekend",
     summary:
-      "The iconic 1987 music video by Rick Astley that became one of the most famous internet memes, known as rickrolling.",
-    topics: ["music", "pop", "meme", "classic"],
-    author: "Rick Astley",
+      "A developer walks through building a full-stack AI-powered app from scratch using Next.js, Supabase, and Claude.",
+    topics: ["programming", "AI", "tutorial"],
+    author: "fireship",
     language: "en",
-    created_at: "2026-03-29T15:30:00Z",
+    created_at: new Date().toISOString(),
   },
   {
-    id: "3",
-    source_url: "https://www.tiktok.com/@zachking/video/7478773498880265518",
-    platform: "tiktok",
-    content_type: "video",
-    title: "Mind-Bending Magic Trick",
-    summary:
-      "Zach King performs a seamless visual illusion that makes everyday objects appear to transform in impossible ways.",
-    topics: ["magic", "illusion", "creative", "entertainment"],
-    author: "zachking",
-    language: "en",
-    created_at: "2026-03-28T08:00:00Z",
-  },
-  {
-    id: "4",
-    source_url: "https://x.com/elonmusk/status/1861446800666911182",
+    id: "example-3",
+    source_url: "https://x.com/example/status/123",
     platform: "twitter",
     content_type: "tweet",
-    title: "SpaceX Starship Update",
+    title: "The Future of Web Development",
     summary:
-      "Elon Musk shares an update about the latest Starship development milestones and upcoming test flight schedule.",
-    topics: ["space", "spacex", "technology", "engineering"],
-    author: "elonmusk",
+      "A thread breaking down the biggest shifts in web dev for 2026 — from AI-assisted coding to edge-first architectures.",
+    topics: ["web development", "technology", "programming"],
+    author: "raaboringdev",
     language: "en",
-    created_at: "2026-03-27T12:00:00Z",
+    created_at: new Date().toISOString(),
   },
   {
-    id: "5",
-    source_url:
-      "https://www.reddit.com/r/webdev/comments/1jm2k5q/what_is_the_most_overengineered_thing_youve_seen/",
-    platform: "reddit",
-    content_type: "thread",
-    title: "Overengineered Web Dev Stories",
-    summary:
-      "A popular thread where developers share their most absurd examples of overengineering in web development projects.",
-    topics: ["web development", "programming", "humor"],
-    author: "r/webdev",
-    language: "en",
-    created_at: "2026-03-26T18:45:00Z",
-  },
-  {
-    id: "6",
-    source_url: "https://www.instagram.com/p/DWTg_Z6DCRO/",
-    platform: "instagram",
-    content_type: "post",
-    title: "Minimal Desk Setup Goals",
-    summary:
-      "A minimalist workspace setup featuring a clean desk with ambient lighting, mechanical keyboard, and dual monitors.",
-    topics: ["productivity", "desk setup", "minimalism"],
-    author: "setupinspiration",
-    language: "en",
-    created_at: "2026-03-25T09:15:00Z",
-  },
-  {
-    id: "7",
-    source_url: "https://blog.apify.com/what-is-web-scraping/",
-    platform: "web",
-    content_type: "article",
-    title: "Web Scraping Complete Guide",
-    summary:
-      "A comprehensive guide explaining what web scraping is, how it works, real-world use cases, and how to get started with data extraction.",
-    topics: ["web scraping", "programming", "data", "tutorial"],
-    author: "apify.com",
-    language: "en",
-    created_at: "2026-03-24T20:30:00Z",
-  },
-  {
-    id: "8",
-    source_url: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
-    platform: "youtube",
+    id: "example-4",
+    source_url: "https://www.tiktok.com/@example/video/123",
+    platform: "tiktok",
     content_type: "video",
-    title: "Me at the Zoo",
+    title: "5AM Morning Routine That Changed My Life",
     summary:
-      "The very first video ever uploaded to YouTube, featuring co-founder Jawed Karim at the San Diego Zoo talking about elephants.",
-    topics: ["youtube", "history", "internet culture"],
-    author: "jawed",
+      "A productivity-focused morning routine including cold shower, journaling, and a 20-minute workout before sunrise.",
+    topics: ["productivity", "morning routine", "mindfulness"],
+    author: "dailyhabits",
     language: "en",
-    created_at: "2026-03-23T14:00:00Z",
-  },
-  {
-    id: "9",
-    source_url: "https://www.instagram.com/reel/DVpqr901/",
-    platform: "instagram",
-    content_type: "reel",
-    title: "4-7-8 Breathing for Anxiety",
-    summary:
-      "A guided 5-minute breathing exercise for anxiety relief using the 4-7-8 technique with physiological explanations.",
-    topics: ["mental health", "breathing", "mindfulness"],
-    author: "drjuliesmith",
-    language: "en",
-    created_at: "2026-03-22T07:00:00Z",
+    created_at: new Date().toISOString(),
   },
 ];
 
@@ -309,72 +244,111 @@ function topicColor(topic: string): string {
 
 type FilterType = "all" | Platform;
 
-function ContentCard({ item }: { item: SavedItem }) {
+function ContentCard({
+  item,
+  isExample = false,
+  onDelete,
+}: {
+  item: SavedItem;
+  isExample?: boolean;
+  onDelete?: (id: string) => void;
+}) {
   const platform = PLATFORM_CONFIG[item.platform];
   const ctype = CONTENT_TYPE_CONFIG[item.content_type];
 
   return (
-    <a
-      href={item.source_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/60 p-5 transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+    <div
+      className={`group relative flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/60 p-5 transition-all duration-300 ${
+        isExample
+          ? "opacity-60 cursor-default"
+          : "hover:border-zinc-700 hover:bg-zinc-900 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+      }`}
     >
-      {/* Top row: type badge + platform + time */}
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${ctype.color}`}
-        >
-          {ctype.icon}
-          {ctype.label}
+      {/* Example badge */}
+      {isExample && (
+        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-zinc-800/90 border border-dashed border-zinc-600/50 text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+          Example
         </span>
-
-        {/* Platform icon */}
-        <svg
-          className={`w-3 h-3 ${platform.color}`}
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path d={platform.icon} />
-        </svg>
-
-        <span className="ml-auto text-[11px] text-zinc-600">
-          {timeAgo(item.created_at)}
-        </span>
-      </div>
-
-      {/* Title */}
-      <h3 className="text-[15px] font-semibold text-zinc-100 leading-snug mb-1 line-clamp-1 group-hover:text-white transition-colors">
-        {item.title}
-      </h3>
-
-      {/* Author */}
-      <p className="text-xs text-zinc-500 mb-3">
-        {item.platform === "reddit" ? item.author : `@${item.author}`}
-      </p>
-
-      {/* Summary */}
-      <p className="text-[13px] leading-relaxed text-zinc-400 line-clamp-3 mb-4">
-        {item.summary}
-      </p>
-
-      {/* Topics */}
-      <div className="flex flex-wrap gap-1.5 mt-auto">
-        {item.topics.slice(0, 3).map((topic) => (
+      )}
+      {/* Card content — links to source URL for real cards */}
+      <a
+        href={isExample ? undefined : item.source_url}
+        target={isExample ? undefined : "_blank"}
+        rel={isExample ? undefined : "noopener noreferrer"}
+        className={isExample ? "cursor-default" : "cursor-pointer"}
+      >
+        {/* Top row: type badge + platform + time */}
+        <div className="flex items-center gap-2 mb-3">
           <span
-            key={topic}
-            className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${topicColor(topic)}`}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${ctype.color}`}
           >
-            {topic}
+            {ctype.icon}
+            {ctype.label}
           </span>
-        ))}
-        {item.topics.length > 3 && (
-          <span className="px-2 py-0.5 rounded-md text-zinc-600 text-[11px] font-medium">
-            +{item.topics.length - 3}
+
+          {/* Platform icon */}
+          <svg
+            className={`w-3 h-3 ${platform.color}`}
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d={platform.icon} />
+          </svg>
+
+          <span className="ml-auto text-[11px] text-zinc-600">
+            {timeAgo(item.created_at)}
           </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-[15px] font-semibold text-zinc-100 leading-snug mb-1 line-clamp-1 group-hover:text-white transition-colors">
+          {item.title}
+        </h3>
+
+        {/* Author */}
+        <p className="text-xs text-zinc-500 mb-3">
+          {item.platform === "reddit" ? item.author : `@${item.author}`}
+        </p>
+
+        {/* Summary */}
+        <p className="text-[13px] leading-relaxed text-zinc-400 line-clamp-3 mb-4">
+          {item.summary}
+        </p>
+      </a>
+
+      {/* Bottom row: topics + delete */}
+      <div className="flex items-end justify-between mt-auto gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {item.topics.slice(0, 3).map((topic) => (
+            <span
+              key={topic}
+              className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${topicColor(topic)}`}
+            >
+              {topic}
+            </span>
+          ))}
+          {item.topics.length > 3 && (
+            <span className="px-2 py-0.5 rounded-md text-zinc-600 text-[11px] font-medium">
+              +{item.topics.length - 3}
+            </span>
+          )}
+        </div>
+        {/* Delete button — hidden for now, enable when ready */}
+        {false && !isExample && onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete!(item.id);
+            }}
+            className="shrink-0 w-7 h-7 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 text-zinc-500"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+            </svg>
+          </button>
         )}
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -412,14 +386,20 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [items, setItems] = useState<SavedItem[]>([]);
   const [searchResults, setSearchResults] = useState<SavedItem[] | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
+  const hasRealData = isLoaded && items.length > 0;
 
-  // Sync user to DB + load bookmarks on first load
+  // Sync user + load bookmarks in one call
   useEffect(() => {
     async function init() {
-      await fetch("/api/auth/sync", { method: "POST" });
-      const res = await fetch("/api/bookmarks");
+      const res = await fetch("/api/auth/sync", { method: "POST" });
       const data = await res.json();
-      if (data.items) setItems(data.items);
+      if (data.items) {
+        setItems(data.items);
+        if (data.items.length >= FREE_SAVE_LIMIT) setLimitReached(true);
+      }
+      setIsLoaded(true);
     }
     init();
   }, []);
@@ -458,7 +438,9 @@ export default function Home() {
   ];
 
   // Use semantic search results when searching, otherwise filter locally
-  const displayItems = searchResults ?? items;
+  // Show example data for new users with no bookmarks
+  const displayItems = searchResults ?? (hasRealData ? items : EXAMPLE_DATA);
+  const showingExamples = isLoaded && !hasRealData && !searchResults;
   const filtered = useMemo(() => {
     return displayItems.filter((item) => {
       if (filter !== "all" && item.platform !== filter) return false;
@@ -468,7 +450,7 @@ export default function Home() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!url) return;
+    if (!url || limitReached) return;
     setIsAnalyzing(true);
     try {
       const res = await fetch("/api/analyze", {
@@ -477,8 +459,9 @@ export default function Home() {
         body: JSON.stringify({ url }),
       });
       const data = await res.json();
-      if (res.ok && data.analysis) {
-        // Reload bookmarks to get the saved item with its DB id
+      if (res.status === 403 && data.error === "limit_reached") {
+        setLimitReached(true);
+      } else if (res.ok && data.analysis) {
         const bookmarksRes = await fetch("/api/bookmarks");
         const bookmarksData = await bookmarksRes.json();
         if (bookmarksData.items) setItems(bookmarksData.items);
@@ -488,6 +471,19 @@ export default function Home() {
     } finally {
       setIsAnalyzing(false);
       setUrl("");
+    }
+  }
+
+  async function handleDelete(id: string) {
+    // Optimistic removal from UI
+    setItems((prev) => prev.filter((item) => item.id !== id));
+
+    const res = await fetch(`/api/bookmarks/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      // Revert if failed — refetch from DB
+      const bookmarksRes = await fetch("/api/bookmarks");
+      const bookmarksData = await bookmarksRes.json();
+      if (bookmarksData.items) setItems(bookmarksData.items);
     }
   }
 
@@ -534,8 +530,20 @@ export default function Home() {
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* ── URL Input ── */}
+        {/* ── Limit banner ── */}
+        {limitReached && (
+          <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-violet-500/20">
+            <p className="text-sm font-medium text-zinc-200 mb-1">
+              You&apos;ve hit the free limit of {FREE_SAVE_LIMIT} saves
+            </p>
+            <p className="text-xs text-zinc-400">
+              Thanks for trying SocialStash! We&apos;re working on a full version with unlimited saves, collections, and more. Stay tuned.
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleAdd} className="mb-8">
-          <div className="flex gap-3 p-1.5 rounded-2xl bg-zinc-900/80 border border-zinc-800/60">
+          <div className={`flex gap-3 p-1.5 rounded-2xl bg-zinc-900/80 border border-zinc-800/60 ${limitReached ? "opacity-50 pointer-events-none" : ""}`}>
             <div className="flex-1 flex items-center gap-3 pl-4">
               <svg
                 className="w-4 h-4 text-zinc-600 shrink-0"
@@ -554,13 +562,14 @@ export default function Home() {
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste any URL to analyze..."
+                placeholder={limitReached ? "Free limit reached" : "Paste any URL to analyze..."}
+                disabled={limitReached}
                 className="flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 outline-none py-2"
               />
             </div>
             <button
               type="submit"
-              disabled={isAnalyzing || !url}
+              disabled={isAnalyzing || !url || limitReached}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-medium transition-all duration-200 hover:from-violet-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none"
             >
               {isAnalyzing ? (
@@ -656,23 +665,38 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Count ── */}
+        {/* ── Count + example banner ── */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-xs text-zinc-600">
-            {filtered.length} item{filtered.length !== 1 ? "s" : ""}
+            {showingExamples
+              ? "Here's what your stash could look like — paste a URL above to get started!"
+              : `${filtered.length} item${filtered.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
         {/* ── Grid ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Show skeletons while loading initial data */}
+          {!isLoaded && (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          )}
           {isAnalyzing && <SkeletonCard />}
-          {filtered.map((item) => (
-            <ContentCard key={item.id} item={item} />
+          {isLoaded && filtered.map((item) => (
+            <ContentCard
+              key={item.id}
+              item={item}
+              isExample={showingExamples}
+              onDelete={showingExamples ? undefined : handleDelete}
+            />
           ))}
         </div>
 
-        {/* ── Empty state ── */}
-        {filtered.length === 0 && !isAnalyzing && (
+        {/* ── Empty state (only when loaded + searching with no results) ── */}
+        {isLoaded && filtered.length === 0 && !isAnalyzing && !showingExamples && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
               <svg

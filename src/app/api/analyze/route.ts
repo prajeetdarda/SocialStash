@@ -4,11 +4,25 @@ import { analyzeContent } from "@/lib/llm";
 import { generateEmbedding } from "@/lib/embeddings";
 import { supabase } from "@/lib/supabase";
 import { getOrCreateUser } from "@/lib/user";
+import { FREE_SAVE_LIMIT } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
     // Get the logged-in user's DB id (creates user row on first call)
     const userId = await getOrCreateUser();
+
+    // Check free tier limit
+    const { count } = await supabase
+      .from("analyses")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (count !== null && count >= FREE_SAVE_LIMIT) {
+      return NextResponse.json(
+        { error: "limit_reached", message: `You've reached the free limit of ${FREE_SAVE_LIMIT} saves. Upgrade coming soon!` },
+        { status: 403 }
+      );
+    }
 
     const { url } = await req.json();
 
