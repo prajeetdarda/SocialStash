@@ -1,8 +1,45 @@
 @import "tailwindcss";
 
+/* ── Light theme (default) ── */
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #f8f9fc;
+  --foreground: #1a1d2e;
+  --card: #ffffff;
+  --card-border: #e8eaf0;
+  --card-hover: #fafafd;
+  --muted: #6b7280;
+  --muted-light: #9ca3af;
+  --surface: #f1f3f8;
+  --surface-border: #e2e5ed;
+  --header-bg: rgba(248, 249, 252, 0.8);
+  --header-border: #e8eaf0;
+  --footer-bg: #f0f1f6;
+  --footer-border: #e2e5ed;
+  --skeleton-from: #e8eaf0;
+  --skeleton-via: #f1f3f8;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-hover: #b0b5be;
+}
+
+/* ── Dark theme ── */
+.dark {
+  --background: #0c0e16;
+  --foreground: #e8eaf0;
+  --card: #151823;
+  --card-border: #1e2235;
+  --card-hover: #1a1e2d;
+  --muted: #7c829a;
+  --muted-light: #4b5069;
+  --surface: #111420;
+  --surface-border: #1e2235;
+  --header-bg: rgba(12, 14, 22, 0.8);
+  --header-border: #1e2235;
+  --footer-bg: #0a0c13;
+  --footer-border: #1e2235;
+  --skeleton-from: #151823;
+  --skeleton-via: #1e2235;
+  --scrollbar-thumb: #1e2235;
+  --scrollbar-hover: #2a2f45;
 }
 
 @theme inline {
@@ -16,6 +53,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Smooth scrollbar */
@@ -26,11 +64,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--scrollbar-hover);
 }
 
 /* Skeleton shimmer */
@@ -39,7 +77,94 @@ body {
   100% { background-position: 200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+  background: linear-gradient(90deg, var(--skeleton-from) 25%, var(--skeleton-via) 50%, var(--skeleton-from) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Marquee animations (CSS fallback for infinite scroll columns) ── */
+@keyframes marquee-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+@keyframes marquee-down {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+.marquee-up { animation: marquee-up 60s linear infinite; will-change: transform; }
+.marquee-down { animation: marquee-down 60s linear infinite; will-change: transform; }
+.marquee-up-slow { animation: marquee-up 80s linear infinite; will-change: transform; }
+.marquee-down-slow { animation: marquee-down 80s linear infinite; will-change: transform; }
+.marquee-up-fast { animation: marquee-up 45s linear infinite; will-change: transform; }
+
+/* ── Landing page animations ── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Staggered fade-in delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* Scroll-triggered reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }

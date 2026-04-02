@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SocialStash",
-  description: "Social media content intelligence",
+  description: "Your Doomscroll stash — save anything, find everything. Always.",
 };
 
 export default function RootLayout({
@@ -27,8 +27,26 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+        suppressHydrationWarning
       >
+        <head>
+          {/* Inline script to apply theme before paint — prevents flash */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var theme = localStorage.getItem('theme');
+                    if (theme === 'light') {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  } catch(e) {}
+                })();
+              `,
+            }}
+          />
+        </head>
         <body className="min-h-full flex flex-col">{children}</body>
       </html>
     </ClerkProvider>
