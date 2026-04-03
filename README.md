@@ -5,7 +5,22 @@ Drop in a URL from Instagram, YouTube, TikTok, X, Reddit, or any article, and So
 
 It is built to solve a common problem: valuable content gets saved everywhere but is hard to retrieve later. SocialStash converts raw links into summaries, topics, and semantic signals so users can find ideas in seconds, not scroll history for minutes.
 
-## What Makes It Strong
+## Project Snapshot
+
+- **Problem solved:** turns fragmented saved links into a searchable personal knowledge layer
+- **Core value:** ingestion -> AI enrichment -> hybrid retrieval in one clean product flow
+- **Engineering depth:** LLM analysis, vector search, PostgreSQL indexing, and access control
+- **Product mindset:** free-tier limits, secure defaults, and a roadmap aligned with user growth
+
+## My Contribution
+
+- Designed and implemented the end-to-end pipeline from URL ingestion to ranked retrieval
+- Built API routes for analyze, search, bookmarks, and auth/user sync flows
+- Integrated Apify, Claude, OpenAI embeddings, Clerk auth, and Supabase persistence
+- Implemented hybrid search and data-protection patterns (RLS + user scoping)
+- Structured the project for iterative delivery (extensible APIs, typed shared contracts)
+
+## Why It Stands Out
 
 - **Cross-platform ingestion** with a unified flow for videos, posts, threads, and articles
 - **AI enrichment pipeline** that adds title, summary, topics, and language metadata
@@ -19,7 +34,7 @@ It is built to solve a common problem: valuable content gets saved everywhere bu
 - Generate AI summaries and topic tags automatically
 - Search with intent (semantic) and precision (keyword)
 - Keep each library private and user-scoped via Clerk + Supabase policies
-- Support free-tier limits with a clear path to paid growth features
+- Support configurable free-tier limits with a clear path to paid growth features
 
 ## Technical Stack
 
