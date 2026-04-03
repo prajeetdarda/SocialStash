@@ -1,82 +1,89 @@
 # SocialStash
 
-Save content from any platform. AI analyzes, categorizes, and makes it searchable.
+SocialStash is an AI-powered knowledge capture platform for social and web content.
+Drop in a URL from Instagram, YouTube, TikTok, X, Reddit, or any article, and SocialStash turns it into structured, searchable knowledge.
 
-Paste an Instagram reel, YouTube video, tweet, TikTok, Reddit thread, or any URL — SocialStash scrapes the content, generates an AI-powered summary with topics, and stores it in a searchable personal library with hybrid semantic + keyword search.
+It is built to solve a common problem: valuable content gets saved everywhere but is hard to retrieve later. SocialStash converts raw links into summaries, topics, and semantic signals so users can find ideas in seconds, not scroll history for minutes.
 
-## Tech Stack
+## What Makes It Strong
+
+- **Cross-platform ingestion** with a unified flow for videos, posts, threads, and articles
+- **AI enrichment pipeline** that adds title, summary, topics, and language metadata
+- **Hybrid retrieval model** combining semantic vector search with keyword relevance
+- **Production-oriented data security** using user scoping and row-level access controls
+- **Extensible architecture** designed for features like collections, recommendations, and multi-surface sharing
+
+## Product Capabilities
+
+- Save content from Instagram, YouTube, TikTok, X, Reddit, and web articles
+- Generate AI summaries and topic tags automatically
+- Search with intent (semantic) and precision (keyword)
+- Keep each library private and user-scoped via Clerk + Supabase policies
+- Support free-tier limits with a clear path to paid growth features
+
+## Technical Stack
 
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 16, React, Tailwind CSS |
-| **Auth** | Clerk (Google + Email sign-in) |
-| **Database** | Supabase (PostgreSQL) |
-| **Vector Search** | pgvector with IVFFlat indexing |
-| **Scraping** | Apify (platform-specific actors) |
-| **AI Analysis** | Claude (Anthropic) — content summarization & topic extraction |
-| **Embeddings** | OpenAI `text-embedding-ada-002` (1536-dim) |
+| **Authentication** | Clerk (Google + Email sign-in) |
+| **Data Layer** | Supabase (PostgreSQL) |
+| **Vector Search** | pgvector (IVFFlat index) |
+| **Content Ingestion** | Apify actors (platform-aware scraping) |
+| **LLM Analysis** | Claude (summary + topic extraction) |
+| **Embeddings** | OpenAI `text-embedding-ada-002` (1536 dimensions) |
 | **Deployment** | Vercel |
 
-## How It Works
+## End-to-End Flow
 
 ```
-User pastes URL
-  -> Apify scrapes content (auto-detects platform)
-  -> Claude analyzes: generates title, summary, topics, language
-  -> OpenAI generates vector embedding from summary + topics
-  -> Everything saved to Supabase (PostgreSQL + pgvector)
-  -> Hybrid search: 70% semantic similarity + 30% keyword relevance
+URL input
+  -> Platform detection + scraping (Apify)
+  -> AI analysis (Claude: title, summary, topics, language)
+  -> Embedding generation (OpenAI)
+  -> Persist to Supabase (Postgres + pgvector)
+  -> Retrieve via hybrid search (semantic + keyword)
 ```
 
-## Features
-
-- **Multi-platform support** — Instagram (posts/reels), YouTube, TikTok, Twitter/X, Reddit, any web article
-- **AI-powered analysis** — auto-generated titles, summaries, topic tags, language detection
-- **Hybrid search** — combines vector cosine similarity with keyword matching, weighted 70/30
-- **Auth & user scoping** — Clerk authentication, each user sees only their own data
-- **Secure by default** — Supabase RLS enabled, service role key server-side only
-- **Free tier** — configurable save limit with upgrade prompt
-
-## Architecture
+## Architecture Snapshot
 
 ```
 src/
   app/
     api/
-      analyze/       POST — scrape + analyze + embed + save
-      auth/sync/     POST — get-or-create user on login
-      bookmarks/     GET  — fetch user's saved items
-      bookmarks/[id] DELETE — remove a bookmark
-      search/        GET  — hybrid semantic + keyword search
-    sign-in/         Clerk sign-in UI
-    sign-up/         Clerk sign-up UI
-    page.tsx         Main dashboard
+      analyze/         POST  scrape + analyze + embed + save
+      auth/sync/       POST  get-or-create user on login
+      bookmarks/       GET   fetch current user's items
+      bookmarks/[id]   DELETE remove saved item
+      search/          GET   hybrid semantic + keyword search
+    sign-in/           Clerk sign-in page
+    sign-up/           Clerk sign-up page
+    page.tsx           Main dashboard
   lib/
-    apify.ts         Platform-specific scraping logic
-    llm.ts           Claude content analysis
-    embeddings.ts    OpenAI vector generation
-    supabase.ts      DB client (service role)
-    user.ts          Clerk <-> Supabase user sync
-    constants.ts     Free tier config
-    types.ts         Shared TypeScript types
-  middleware.ts      Route protection via Clerk
+    apify.ts           Scraping orchestration
+    llm.ts             Content analysis
+    embeddings.ts      Embedding creation
+    supabase.ts        Server-side DB client
+    user.ts            Clerk <-> Supabase sync
+    constants.ts       Product limits and defaults
+    types.ts           Shared TypeScript types
+  middleware.ts        Route protection
 supabase/
-  migrations/        SQL schema, search function, RLS policies
+  migrations/          Schema, indexes, RLS, search function
 ```
 
-## Database Schema
+## Search Model
 
-**users** — clerk_id, email, created_at
+The retrieval layer uses PostgreSQL + pgvector with a weighted hybrid score:
 
-**analyses** — source_url, platform, content_type, title, summary, topics (TEXT[] with GIN index), author, language, embedding (VECTOR(1536) with IVFFlat index), created_at
-
-Search uses a PostgreSQL function (`search_analyses`) that scores results as:
 ```
 score = 0.7 * cosine_similarity(query_embedding, row_embedding)
       + 0.3 * keyword_match_score(title, summary, topics, author)
 ```
 
-## Local Development
+This keeps results both context-aware and text-relevant, especially for short or ambiguous queries.
+
+## Local Setup
 
 ```bash
 git clone https://github.com/prajeetdarda/SocialStash.git
@@ -84,7 +91,8 @@ cd SocialStash
 npm install
 ```
 
-Create `.env.local` with:
+Create `.env.local`:
+
 ```
 APIFY_TOKEN=
 ANTHROPIC_API_KEY=
@@ -97,20 +105,22 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ```
 
-Run the SQL migrations in `supabase/migrations/` (in order) via Supabase SQL Editor.
+Run migrations from `supabase/migrations/` in order, then start:
 
 ```bash
 npm run dev
 ```
 
-## Roadmap
+## Current Scope and Next Milestones
 
-- Mobile app — share from any app, analysis happens in the background
-- Browser extension — one-click save while browsing
-- Collections & folders
-- "Find similar" — discover related saves across platforms
-- Unlimited saves with Pro plan
+SocialStash currently focuses on high-quality saving, enrichment, and retrieval for individual users.
+Planned expansions include:
+
+- Collections and folder-level organization
+- Similar-content discovery ("find related saves")
+- Browser extension for one-click capture
+- Mobile share-to-save experience
 
 ## Author
 
-**Prajeet Darda** — [LinkedIn](https://www.linkedin.com/in/prajeet-darda) | [Portfolio](https://prajeetdarda.github.io/) | [GitHub](https://github.com/prajeetdarda)
+**Prajeet Darda** - [LinkedIn](https://www.linkedin.com/in/prajeet-darda) | [Portfolio](https://prajeetdarda.github.io/) | [GitHub](https://github.com/prajeetdarda)
