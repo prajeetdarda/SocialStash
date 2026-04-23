@@ -226,7 +226,11 @@ function ThemeToggle() {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
+    const frame = requestAnimationFrame(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {
@@ -366,7 +370,7 @@ function ContentCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(item.id);
+              onDelete?.(item.id);
             }}
             className="shrink-0 w-7 h-7 rounded-lg bg-[var(--surface)] border border-[var(--surface-border)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:border-red-200 hover:text-red-500 dark:hover:bg-red-500/20 dark:hover:border-red-500/30 dark:hover:text-red-400 text-[var(--muted)]"
           >
